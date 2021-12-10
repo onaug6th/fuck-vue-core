@@ -1517,8 +1517,8 @@
   }
 
   /**
-   * 合并两个配置为一个新配置 Merge two option objects into a new one.
-   * 用于实例化和继承的核心逻辑 Core utility used in both instantiation and inheritance.
+   * 合并两个配置为一个新配置
+   * 用于实例化和继承的核心逻辑
    */
   function mergeOptions (
     parent,
@@ -3511,27 +3511,26 @@
   /*  */
 
   function initRender (vm) {
-    vm._vnode = null; // the root of the child tree
-    vm._staticTrees = null; // v-once cached trees
+    vm._vnode = null; // 子树的根
+    vm._staticTrees = null; // v-once 缓存的树
     var options = vm.$options;
-    var parentVnode = vm.$vnode = options._parentVnode; // the placeholder node in parent tree
+    var parentVnode = vm.$vnode = options._parentVnode; // 父树中的占位符节点
     var renderContext = parentVnode && parentVnode.context;
     vm.$slots = resolveSlots(options._renderChildren, renderContext);
     vm.$scopedSlots = emptyObject;
-    // bind the createElement fn to this instance
-    // so that we get proper render context inside it.
-    // args order: tag, data, children, normalizationType, alwaysNormalize
-    // internal version is used by render functions compiled from templates
+    // 将createElement fn绑定到此实例
+    // 这样我们就可以在其中获得适当的渲染上下文。
+    // 参数顺序： tag, data, children, normalizationType, alwaysNormalize
+    // 内部版本由从模板编译的渲染函数使用
     vm._c = function (a, b, c, d) { return createElement(vm, a, b, c, d, false); };
-    // normalization is always applied for the public version, used in
-    // user-written render functions.
+    // 规范化始终应用于公共版本，用于用户编写的渲染函数。
     vm.$createElement = function (a, b, c, d) { return createElement(vm, a, b, c, d, true); };
 
     // $attrs & $listeners are exposed for easier HOC creation.
-    // they need to be reactive so that HOCs using them are always updated
+    // 它们需要是响应式的，以便使用它们的HOC始终得到更新
     var parentData = parentVnode && parentVnode.data;
 
-    /* istanbul ignore else */
+    //  @todo 这一段看起来像是为实例增加$attrs与$listeners的逻辑
     {
       defineReactive$$1(vm, '$attrs', parentData && parentData.attrs || emptyObject, function () {
         !isUpdatingChildComponent && warn("$attrs is readonly.", vm);
@@ -4655,14 +4654,19 @@
   function initState (vm) {
     vm._watchers = [];
     var opts = vm.$options;
+    //  初始化props
     if (opts.props) { initProps(vm, opts.props); }
+    //  初始化methods
     if (opts.methods) { initMethods(vm, opts.methods); }
+    //  初始化data
     if (opts.data) {
       initData(vm);
     } else {
       observe(vm._data = {}, true /* asRootData */);
     }
+    //  初始化computed
     if (opts.computed) { initComputed(vm, opts.computed); }
+    //  初始化watch
     if (opts.watch && opts.watch !== nativeWatch) {
       initWatch(vm, opts.watch);
     }
@@ -4986,14 +4990,14 @@
       vm._uid = uid$3++;
 
       var startTag, endTag;
-      //  @todo 性能配置相关，暂时跳过
+      //  监听性能相关
       if (config.performance && mark) {
         startTag = "vue-perf-start:" + (vm._uid);
         endTag = "vue-perf-end:" + (vm._uid);
         mark(startTag);
       }
 
-      //  @todo 不懂这个的用途，后面再补
+      //  @todo 不懂这个的用途，后面发现再补
       vm._isVue = true;
 
       //  这段if else 处理配置的合并
@@ -5014,19 +5018,28 @@
           vm
         );
       }
-      /* istanbul ignore else */
+
+      //  花括号包裹是为了忽略代码覆盖率
       {
         initProxy(vm);
       }
-      // expose real self
+      //  记录真实this指向
       vm._self = vm;
+      //  初始化生命周期相关属性
       initLifecycle(vm);
+      //  初始化事件中心
       initEvents(vm);
+      //  初始化渲染
       initRender(vm);
+      //  执行create生命周期
       callHook(vm, 'beforeCreate');
+      //  初始化注入
       initInjections(vm); // resolve injections before data/props
+      //  初始化实例状态（props，methods，data，computed，等等...）
       initState(vm);
+      //  初始化provide
       initProvide(vm); // resolve provide after data/props
+      //  执行created生命周期
       callHook(vm, 'created');
 
       /* istanbul ignore if */
@@ -5036,6 +5049,7 @@
         measure(("vue " + (vm._name) + " init"), startTag, endTag);
       }
 
+      //  监听性能相关
       if (vm.$options.el) {
         vm.$mount(vm.$options.el);
       }
@@ -5105,7 +5119,7 @@
     ) {
       warn('Vue is a constructor and should be called with the `new` keyword');
     }
-    //  调用_init方法，搜索：Vue.prototype._init = 快速定位位置
+    //  调用_init方法，搜索：Vue.prototype._init
     this._init(options);
   }
 
