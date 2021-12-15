@@ -483,7 +483,7 @@
   var unicodeRegExp = /a-zA-Z\u00B7\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u037D\u037F-\u1FFF\u200C-\u200D\u203F-\u2040\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD/;
 
   /**
-   * Check if a string starts with $ or _
+   * 检查字符串是否以$ 或 _ 开头
    */
   function isReserved (str) {
     var c = (str + '').charCodeAt(0);
@@ -491,7 +491,7 @@
   }
 
   /**
-   * Define a property.
+   * 设置一个属性
    */
   function def (obj, key, val, enumerable) {
     Object.defineProperty(obj, key, {
@@ -981,18 +981,23 @@
   }
 
   /**
-   * Attempt to create an observer instance for a value,
-   * returns the new observer if successfully observed,
-   * or the existing observer if the value already has one.
+   * 尝试为值创建观察者实例
+   * 如果观察成功，则返回新的观察者
+   * 或现有的观察者（如果该值已有）
+   * @param value data对象
+   * @param asRootData 是否根data
    */
   function observe (value, asRootData) {
     if (!isObject(value) || value instanceof VNode) {
       return
     }
     var ob;
+    //  存在观察者到了就直接返回
     if (hasOwn(value, '__ob__') && value.__ob__ instanceof Observer) {
       ob = value.__ob__;
-    } else if (
+    }
+    //  应该监听 且 非服务端渲染 且 是数组或是对象 且 对象可扩展（密封对象，冻结对象不可扩展） 且 !value._isVue
+    else if (
       shouldObserve &&
       !isServerRendering() &&
       (Array.isArray(value) || isPlainObject(value)) &&
@@ -4722,9 +4727,12 @@
 
   function initData (vm) {
     var data = vm.$options.data;
+    //  连续赋值，判断是否一个函数
     data = vm._data = typeof data === 'function'
       ? getData(data, vm)
       : data || {};
+
+    //  如果不是一个对象
     if (!isPlainObject(data)) {
       data = {};
       warn(
@@ -4754,11 +4762,13 @@
           "Use prop default value instead.",
           vm
         );
-      } else if (!isReserved(key)) {
+      }
+      //  检查是否保留属性
+      else if (!isReserved(key)) {
         proxy(vm, "_data", key);
       }
     }
-    // observe data
+    //  开始劫持数据
     observe(data, true /* asRootData */);
   }
 
