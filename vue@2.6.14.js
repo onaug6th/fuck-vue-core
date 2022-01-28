@@ -943,7 +943,7 @@
   Observer.prototype.walk = function walk (obj) {
     var keys = Object.keys(obj);
     for (var i = 0; i < keys.length; i++) {
-      defineReactive$$1(obj, keys[i]);
+      defineReactive(obj, keys[i]);
     }
   };
 
@@ -1008,9 +1008,15 @@
   }
 
   /**
-   * Define a reactive property on an Object.
+   * 对一个对象进行响应式监听
+   * @param {*} obj 监听的对象
+   * @param {*} key 属性
+   * @param {*} val 属性值
+   * @param {*} customSetter 自定义setter
+   * @param {*} shallow 
+   * @returns 
    */
-  function defineReactive$$1 (
+  function defineReactive (
     obj,
     key,
     val,
@@ -1019,7 +1025,9 @@
   ) {
     var dep = new Dep();
 
+    //  获取属性的defineproperty属性
     var property = Object.getOwnPropertyDescriptor(obj, key);
+    //  属性不能被修改，不监听
     if (property && property.configurable === false) {
       return
     }
@@ -1032,6 +1040,7 @@
     }
 
     var childOb = !shallow && observe(val);
+
     Object.defineProperty(obj, key, {
       enumerable: true,
       configurable: true,
@@ -1102,7 +1111,7 @@
       target[key] = val;
       return val
     }
-    defineReactive$$1(ob.value, key, val);
+    defineReactive(ob.value, key, val);
     ob.dep.notify();
     return val
   }
@@ -2455,7 +2464,7 @@
       Object.keys(result).forEach(function (key) {
         /* istanbul ignore else */
         {
-          defineReactive$$1(vm, key, result[key], function () {
+          defineReactive(vm, key, result[key], function () {
             warn(
               "Avoid mutating an injected value directly since the changes will be " +
               "overwritten whenever the provided component re-renders. " +
@@ -3532,10 +3541,10 @@
 
     //  @todo 这一段看起来像是为实例增加$attrs与$listeners的逻辑
     {
-      defineReactive$$1(vm, '$attrs', parentData && parentData.attrs || emptyObject, function () {
+      defineReactive(vm, '$attrs', parentData && parentData.attrs || emptyObject, function () {
         !isUpdatingChildComponent && warn("$attrs is readonly.", vm);
       }, true);
-      defineReactive$$1(vm, '$listeners', options._parentListeners || emptyObject, function () {
+      defineReactive(vm, '$listeners', options._parentListeners || emptyObject, function () {
         !isUpdatingChildComponent && warn("$listeners is readonly.", vm);
       }, true);
     }
@@ -3966,7 +3975,7 @@
         // initial render
         vm.$el = vm.__patch__(vm.$el, vnode, hydrating, false /* removeOnly */);
       } else {
-        // updates
+        // 更新视图DOM
         vm.$el = vm.__patch__(prevVnode, vnode);
       }
       restoreActiveInstance();
@@ -4696,7 +4705,7 @@
             vm
           );
         }
-        defineReactive$$1(props, key, value, function () {
+        defineReactive(props, key, value, function () {
           if (!isRoot && !isUpdatingChildComponent) {
             warn(
               "Avoid mutating a prop directly since the value will be " +
@@ -5049,7 +5058,7 @@
         measure(("vue " + (vm._name) + " init"), startTag, endTag);
       }
 
-      //  监听性能相关
+      //  存在el属性，进行渲染
       if (vm.$options.el) {
         vm.$mount(vm.$options.el);
       }
@@ -5471,7 +5480,7 @@
       warn: warn,
       extend: extend,
       mergeOptions: mergeOptions,
-      defineReactive: defineReactive$$1
+      defineReactive: defineReactive
     };
 
     Vue.set = set;
@@ -5733,7 +5742,9 @@
   /*  */
 
   /**
-   * Query an element selector if it's not an element already.
+   * 如果元素选择器不是元素，则查询它。
+   * @param {*} el 
+   * @returns 
    */
   function query (el) {
     if (typeof el === 'string') {
@@ -11956,6 +11967,13 @@
   });
 
   var mount = Vue.prototype.$mount;
+  
+  /**
+   * 模板渲染逻辑
+   * @param {*} el 
+   * @param {*} hydrating 
+   * @returns 
+   */
   Vue.prototype.$mount = function (
     el,
     hydrating
@@ -11971,10 +11989,13 @@
     }
 
     var options = this.$options;
-    // resolve template/el and convert to render function
+    // 解析模板或el，并转换为render函数
     if (!options.render) {
       var template = options.template;
+
+      //  如指定template属性
       if (template) {
+        //  template是一个字符串
         if (typeof template === 'string') {
           if (template.charAt(0) === '#') {
             template = idToTemplate(template);
@@ -11986,7 +12007,9 @@
               );
             }
           }
-        } else if (template.nodeType) {
+        }
+        //  template是一个documentfragment
+        else if (template.nodeType) {
           template = template.innerHTML;
         } else {
           {
@@ -11994,15 +12017,20 @@
           }
           return this
         }
-      } else if (el) {
+      }
+      //  如指定el属性
+      else if (el) {
         template = getOuterHTML(el);
       }
+
+      //  经过上面的判断，template有值，开始转换为render函数
       if (template) {
-        /* istanbul ignore if */
+        //  监听性能相关
         if (config.performance && mark) {
           mark('compile');
         }
 
+        //  解析为函数
         var ref = compileToFunctions(template, {
           outputSourceRange: "development" !== 'production',
           shouldDecodeNewlines: shouldDecodeNewlines,
@@ -12015,7 +12043,7 @@
         options.render = render;
         options.staticRenderFns = staticRenderFns;
 
-        /* istanbul ignore if */
+        //  监听性能相关
         if (config.performance && mark) {
           mark('compile end');
           measure(("vue " + (this._name) + " compile"), 'compile', 'compile end');
