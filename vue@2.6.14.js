@@ -918,27 +918,36 @@
    * object's property keys into getter/setters that
    * collect dependencies and dispatch updates.
    */
+  /**
+   * 对一个值进行新增观察者
+   * @param {*} value 
+   */
   var Observer = function Observer (value) {
     this.value = value;
     this.dep = new Dep();
     this.vmCount = 0;
+    //  给这个属性值设置属性 __ob__ 指向此观察者
     def(value, '__ob__', this);
+
+    //  是数组
     if (Array.isArray(value)) {
       if (hasProto) {
         protoAugment(value, arrayMethods);
       } else {
         copyAugment(value, arrayMethods, arrayKeys);
       }
+      //  对数组内的所有下标内容再次执行新增观察者
       this.observeArray(value);
-    } else {
+    }
+    //  
+    else {
       this.walk(value);
     }
   };
 
   /**
-   * Walk through all properties and convert them into
-   * getter/setters. This method should only be called when
-   * value type is Object.
+   * 当值为对象时调用，遍历所有属性执行defineReactive
+   * @param {*} obj 
    */
   Observer.prototype.walk = function walk (obj) {
     var keys = Object.keys(obj);
@@ -948,7 +957,7 @@
   };
 
   /**
-   * Observe a list of Array items.
+   * 观察每一个数组项
    */
   Observer.prototype.observeArray = function observeArray (items) {
     for (var i = 0, l = items.length; i < l; i++) {
@@ -992,7 +1001,7 @@
       return
     }
     var ob;
-    //  存在观察者到了就直接返回
+    //  已经观察过了，直接返回
     if (hasOwn(value, '__ob__') && value.__ob__ instanceof Observer) {
       ob = value.__ob__;
     }
@@ -1013,7 +1022,7 @@
   }
 
   /**
-   * 对一个对象进行响应式监听
+   * 对象obj里的属性key变成一个getter/setter形式的响应式的属性
    * @param {*} obj 监听的对象
    * @param {*} key 属性
    * @param {*} val 属性值
@@ -1032,12 +1041,12 @@
 
     //  获取属性的defineproperty属性
     var property = Object.getOwnPropertyDescriptor(obj, key);
-    //  属性不能被修改，不监听
+    //  属性不能修改，返回
     if (property && property.configurable === false) {
       return
     }
 
-    // cater for pre-defined getter/setters
+    // 满足预定义的 getter/setters
     var getter = property && property.get;
     var setter = property && property.set;
     if ((!getter || setter) && arguments.length === 2) {
@@ -1052,6 +1061,7 @@
       get: function reactiveGetter () {
         var value = getter ? getter.call(obj) : val;
         if (Dep.target) {
+          //  依赖收集
           dep.depend();
           if (childOb) {
             childOb.dep.depend();
@@ -1080,6 +1090,7 @@
           val = newVal;
         }
         childOb = !shallow && observe(newVal);
+        //  触发该属性的依赖，通知变更
         dep.notify();
       }
     });
@@ -4736,7 +4747,7 @@
 
   function initData (vm) {
     var data = vm.$options.data;
-    //  连续赋值，判断是否一个函数
+    //  判断是否一个函数
     data = vm._data = typeof data === 'function'
       ? getData(data, vm)
       : data || {};
@@ -4757,6 +4768,7 @@
     var i = keys.length;
     while (i--) {
       var key = keys[i];
+      //  data的属性与methods的属性名相同
       {
         if (methods && hasOwn(methods, key)) {
           warn(
@@ -4765,6 +4777,7 @@
           );
         }
       }
+      //  data的属性与props的属性名相同
       if (props && hasOwn(props, key)) {
         warn(
           "The data property \"" + key + "\" is already declared as a prop. " +
@@ -4772,11 +4785,12 @@
           vm
         );
       }
-      //  检查是否保留属性
+      //  检查是否以$ 或 _ 开头
       else if (!isReserved(key)) {
         proxy(vm, "_data", key);
       }
     }
+
     //  开始劫持数据
     observe(data, true /* asRootData */);
   }
@@ -4894,6 +4908,7 @@
     var props = vm.$options.props;
     for (var key in methods) {
       {
+        //  不是一个函数
         if (typeof methods[key] !== 'function') {
           warn(
             "Method \"" + key + "\" has type \"" + (typeof methods[key]) + "\" in the component definition. " +
@@ -4901,12 +4916,14 @@
             vm
           );
         }
+        //  方法名称与props的属性同名
         if (props && hasOwn(props, key)) {
           warn(
             ("Method \"" + key + "\" has already been defined as a prop."),
             vm
           );
         }
+        //  方法名称以$ 或 _ 开头
         if ((key in vm) && isReserved(key)) {
           warn(
             "Method \"" + key + "\" conflicts with an existing Vue instance method. " +
@@ -4914,6 +4931,7 @@
           );
         }
       }
+      //  设置实例方法，为bind绑定了this指向为实例的方法
       vm[key] = typeof methods[key] !== 'function' ? noop : bind(methods[key], vm);
     }
   }
