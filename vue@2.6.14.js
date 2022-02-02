@@ -709,8 +709,7 @@
   var uid = 0;
 
   /**
-   * A dep is an observable that can have multiple
-   * directives subscribing to it.
+   * Dep：扮演观察目标的角色，每一个数据都会有Dep类实例
    */
   var Dep = function Dep () {
     this.id = uid++;
@@ -1060,6 +1059,54 @@
       configurable: true,
       get: function reactiveGetter () {
         var value = getter ? getter.call(obj) : val;
+
+        /**
+         * 在编译模板或者实例会创建Wacther，`new Watcher()`时，会执行`this.get()`。
+         * 
+         * ```js
+         * Watcher.prototype.get = function get () {
+         *  //  将当前watcher设置为Dep.target
+         *  pushTarget(this);
+         * 
+         *  //  尝试执行表达式函数，同时触发了数据被劫持的getter，让在getter中dep收集下此watcher
+         *  value = this.getter.call(vm, vm);
+         * }
+         * ```
+         * 
+         * 先将Watcher放置到Dep.target，然后执行表达式（this.getter）
+         * 在表达式执行时，如果用到了这个数据，会访问这个数据的getter函数。也就是回到了下方的逻辑
+         * 判断是否存在Dep.target，如果存在。说明是在Wacther创建时触发执行的，此时执行`dep.depend();`。
+         * 
+         * ```js
+         * Dep.prototype.depend = function depend () {
+         *  if (Dep.target) {
+         *    Dep.target.addDep(this);
+         *  }
+         * };
+         * ```
+         * 
+         * `Dep.target.addDep(this);` 同等于 `watcher.addDep(dep);`
+         * 
+         * ```js
+         * Wacther.prorotype.addDep = function addDep (dep) {
+         *  var id = dep.id;
+         *  //  如果此watcher没有存在于此dep
+         *  if (!this.newDepIds.has(id)) {
+         *    this.newDepIds.add(id);
+         *    this.newDeps.push(dep);
+         *    if (!this.depIds.has(id)) {
+         *      //  在dep中添加此watcher
+         *      dep.addSub(this);
+         *    }
+         *  }
+         * };
+         * ```
+         * 
+         * 
+         * dep存在于defineReactive函数，是一个闭包变量。执行`dep.depend()`是为了让dep收集这个watcher，
+         * 这样在setter触发时，能够通过`dep.notify()`。来执行被收集的watcher，让每处依赖的地方得到更新。
+         */
+
         if (Dep.target) {
           //  依赖收集
           dep.depend();
@@ -4518,10 +4565,15 @@
    * Evaluate the getter, and re-collect dependencies.
    */
   Watcher.prototype.get = function get () {
+    //  将当前watcher设置为Dep.target
     pushTarget(this);
+
+    //  内容
     var value;
+    //  实例
     var vm = this.vm;
     try {
+      //  尝试执行表达式函数，同时触发了数据被劫持的getter，让在getter中dep收集下此watcher
       value = this.getter.call(vm, vm);
     } catch (e) {
       if (this.user) {
@@ -4546,10 +4598,12 @@
    */
   Watcher.prototype.addDep = function addDep (dep) {
     var id = dep.id;
+    //  如果此watcher没有存在于此dep
     if (!this.newDepIds.has(id)) {
       this.newDepIds.add(id);
       this.newDeps.push(dep);
       if (!this.depIds.has(id)) {
+        //  在dep中添加此watcher
         dep.addSub(this);
       }
     }
