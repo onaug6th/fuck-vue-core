@@ -1052,6 +1052,7 @@
       val = obj[key];
     }
 
+    //  子元素要进行observe，形成递归
     var childOb = !shallow && observe(val);
 
     Object.defineProperty(obj, key, {
@@ -1110,6 +1111,7 @@
         if (Dep.target) {
           //  依赖收集
           dep.depend();
+          //  存在子内容，继续收集
           if (childOb) {
             childOb.dep.depend();
             if (Array.isArray(value)) {
@@ -1136,6 +1138,7 @@
         } else {
           val = newVal;
         }
+        //  当设置了新值，新值也要被observe
         childOb = !shallow && observe(newVal);
         //  触发该属性的依赖，通知变更
         dep.notify();
@@ -4108,12 +4111,21 @@
     };
   }
 
+  /**
+   * 挂载组件
+   * @param {*} vm 
+   * @param {*} el 
+   * @param {*} hydrating 
+   * @returns 
+   */
   function mountComponent (
     vm,
     el,
     hydrating
   ) {
+    //  设置$el属性
     vm.$el = el;
+
     if (!vm.$options.render) {
       vm.$options.render = createEmptyVNode;
       {
@@ -4137,7 +4149,7 @@
     callHook(vm, 'beforeMount');
 
     var updateComponent;
-    /* istanbul ignore if */
+    //  性能优化相关
     if (config.performance && mark) {
       updateComponent = function () {
         var name = vm._name;
@@ -4164,6 +4176,7 @@
     // we set this to vm._watcher inside the watcher's constructor
     // since the watcher's initial patch may call $forceUpdate (e.g. inside child
     // component's mounted hook), which relies on vm._watcher being already defined
+    //  新建一个Wacther，对应一个组件
     new Watcher(vm, updateComponent, noop, {
       before: function before () {
         if (vm._isMounted && !vm._isDestroyed) {
@@ -4402,6 +4415,7 @@
       }
       id = watcher.id;
       has[id] = null;
+      //  观察者更新视图
       watcher.run();
       // in dev build, check and stop circular updates.
       if (has[id] != null) {
@@ -5059,6 +5073,7 @@
       var watcher = new Watcher(vm, expOrFn, cb, options);
       if (options.immediate) {
         var info = "callback for immediate watcher \"" + (watcher.expression) + "\"";
+        //  混入
         pushTarget();
         invokeWithErrorHandling(cb, vm, [watcher.value], vm, info);
         popTarget();
@@ -12132,6 +12147,8 @@
         }
       }
     }
+
+    //  挂载组件
     return mount.call(this, el, hydrating)
   };
 
