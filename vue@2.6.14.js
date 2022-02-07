@@ -923,6 +923,7 @@
    */
   var Observer = function Observer (value) {
     this.value = value;
+    //  用于属性值的依赖收集
     this.dep = new Dep();
     this.vmCount = 0;
     //  给这个属性值设置属性 __ob__ 指向此观察者
@@ -1036,6 +1037,7 @@
     customSetter,
     shallow
   ) {
+    //  用于属性的依赖收集
     var dep = new Dep();
 
     //  获取属性的defineproperty属性
@@ -4168,7 +4170,12 @@
         measure(("vue " + name + " patch"), startTag, endTag);
       };
     } else {
+      //  指定组件更新方法
       updateComponent = function () {
+        /**
+         * vm._update 虚拟dom转换为真实dom
+         * vm._render 返回VNode
+         */
         vm._update(vm._render(), hydrating);
       };
     }
