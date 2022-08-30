@@ -37,6 +37,7 @@ const bucket = new WeakMap()
  * 被劫持的对象
  */
 const data = {
+    showNameFirst: false,
     name: 'august',
     age: 25
 }
@@ -200,7 +201,73 @@ function cleanup(effectFn) {
     effectFn.deps.length = 0
 }
 
-//  一个模拟的表达式 {{ name + age }}
+/**
+ * 计算属性
+ * @param { Function } getter 表达式
+ * @returns 
+ */
+function computed(getter) {
+    let value
+    //  是否需要计算
+    let isNeedComputed = true
+
+    //  声明一个对象，仅有只读属性value
+    const obj = {
+        get value() {
+            //  在首次读取，或依赖发生变化时。需要重新计算
+            //  重新执行副作用函数，获取最新正确的返回值
+            if (isNeedComputed) {
+                value = effectFn()
+                isNeedComputed = false
+            }
+
+            //  计算属性被获取时，需要重新依赖收集
+            track(obj, 'value')
+            //  返回计算属性结果
+            return value
+        }
+    }
+
+    /**
+     * 注册副作用函数，但首次不会执行，而是返回一个副作用函数
+     */
+    const effectFn = effectRegister(getter, {
+        lazy: true,
+        //  指定任务调度函数，处理计算属性逻辑
+        scheduler() {
+            //  进入了调度任务，说明需要依赖的属性发生变化
+            //  仅非需要计算时执行，是为了避免多次执行
+            if (!isNeedComputed) {
+                //  设置为需要重新计算
+                isNeedComputed = true
+
+                //  计算属性发生改变，需要执行全部副作用函数
+                trigger(obj, 'value')
+            }
+        }
+    })
+
+    return obj
+}
+
+// //  模拟的表达式
+// effectRegister(() => {
+//     console.log('打印name和age属性', proxyData.name + proxyData.age)
+// })
+
+// //  模拟的表达式
+// effectRegister(() => {
+//     console.log('仅打印name属性', proxyData.name)
+// })
+
+// //  开关的表达式
+// effectRegister(() => {
+//     console.info(proxyData.showNameFirst ? proxyData.name : proxyData.age)
+// })
+
+const computedSum = computed(() => proxyData.name + proxyData.age)
+
 effectRegister(() => {
-    console.log(proxyData.name + proxyData.age)
+    console.log('副作用函数里的计算属性', computedSum.value)
 })
+
