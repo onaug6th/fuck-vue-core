@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>基本的响应式系统</title>
+</head>
+<body>
+    
+</body>
+
+<script src="./index.js"></script>
+
+<script>
+    effect(() => {
+        console.info('name或age变化时，你会看到这段打印：', _data.name, _data.age)
+    })
+
+    effect(() => {
+        console.info('name变化时，你会看到这段打印：', _data.name)
+    })
+
+    // effect(() => {
+    //     //  showNameFirst改变时，会输出这段打印
+    //     //  但将showNameFirst改为false时，再修改name，也触发了这段打印。这是为什么呢
+    //     console.info('分支条件输出的结果：', _data.showNameFirst ? _data.name : _data.age)
+    // })
+</script>
+</html>
