@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>解决副作用函数嵌套问题</title>
+</head>
+<body>
+    
+</body>
+
+<script src="./index.js"></script>
+
+<script>
+    effect(() => {
+        effect(() => {
+            //  只有age发生变化时，会打印
+            console.info('age发生了变化：', _data.age)
+        })
+
+        //  name发生变化时，会先打印上方的age，再打印name
+        console.info('name发生了变化：', _data.name)
+    })
+
+    //  借助这个响应式系统，我们可以实现计算属性
+</script>
+</html>
