@@ -19,7 +19,7 @@
         flush: 'post'
     })
 
-    watch(() => _data, () => {
+    watch(_data, () => {
         console.info('watch有任意一个属性发生变化了')
     })
 </script>
