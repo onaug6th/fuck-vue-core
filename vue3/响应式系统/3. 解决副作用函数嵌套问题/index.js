@@ -135,7 +135,7 @@ function effect(fn) {
         // 在调用副作用函数之前将当前副作用函数压栈
         effectStack.push(effectFn)
 
-        //  执行业务函数
+        //  执行业务函数，触发响应式属性读取
         fn()
 
         //  在当前副作用函数执行完毕后，将当前副作用函数弹出栈，并还原 activeEffect 为之前的值

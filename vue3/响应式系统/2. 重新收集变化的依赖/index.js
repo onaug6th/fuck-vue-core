@@ -126,7 +126,7 @@ function effect(fn) {
          */
         activeEffect = effectFn
 
-        //  执行业务函数
+        //  执行业务函数，触发响应式属性读取
         fn()
 
         //  还原activeEffect
