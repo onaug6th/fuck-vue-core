@@ -128,9 +128,7 @@ function effect(fn) {
         //  清空此副作用函数依赖的对象属性
         cleanup(effectFn)
 
-        /**
-         * 当注册副作用函数时，将副作用函数赋值给 activeEffect
-         */
+        //  赋值给 activeEffect，为了在get里能被正确收集依赖
         activeEffect = effectFn
         // 在调用副作用函数之前将当前副作用函数压栈
         effectStack.push(effectFn)

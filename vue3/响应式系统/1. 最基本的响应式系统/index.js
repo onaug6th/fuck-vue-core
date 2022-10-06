@@ -104,9 +104,7 @@ let activeEffect
  * @param { Function } fn 业务函数
  */
 function effect(fn) {
-    /**
-     * 当注册副作用函数时，将副作用函数赋值给 activeEffect
-     */
+    //  赋值给 activeEffect，为了在get里能被正确收集依赖
     activeEffect = fn
 
     //  执行业务函数，触发响应式属性读取

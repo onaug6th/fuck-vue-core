@@ -136,14 +136,12 @@ function effect(fn, options = {}) {
         //  清空此副作用函数依赖的对象属性
         cleanup(effectFn)
 
-        /**
-         * 当注册副作用函数时，将副作用函数赋值给 activeEffect
-         */
+        //  赋值给 activeEffect，为了在get里能被正确收集依赖
         activeEffect = effectFn
         // 在调用副作用函数之前将当前副作用函数压栈
         effectStack.push(effectFn)
 
-        //  执行业务函数
+        //  执行业务函数，触发响应式属性读取
         const res = fn()
 
         //  在当前副作用函数执行完毕后，将当前副作用函数弹出栈，并还原 activeEffect 为之前的值
@@ -249,7 +247,7 @@ function traverse(value, seen = new Set()) {
 
 /**
  * 观察一个/包含响应式数据或响应式数据属性的变化
- * @param { Function | Object } source 观察的目标
+ * @param { Function | Object | Array<Object> } source 观察的目标
  * @param { (newValue, oldValue) => {} } cb 变化的回调
  * @param { Object } options 配置
  */
@@ -259,6 +257,9 @@ function watch(source, cb, options = {}) {
     //  函数指定观察目标
     if (typeof source === 'function') {
         getter = source
+    }
+    else if (Array.isArray(source)) {
+        getter = () => source.forEach(i => traverse(i))
     }
     //  响应式数据，遍历此数据的所有属性进行访问
     else {
