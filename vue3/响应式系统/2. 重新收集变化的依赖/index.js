@@ -74,7 +74,7 @@ function track(target, key) {
  * @param { string } key 对象属性
  */
 function trigger(target, key) {
-    //  如该对象没有副作用函数Map，说明未曾依赖收集过，直接返回
+    //  如该对象没有依赖Map，说明未曾依赖收集过，直接返回
     const depsMap = bucket.get(target)
     if (!depsMap) {
         return
@@ -137,8 +137,6 @@ function effect(fn) {
     effectFn.deps = []
 
     effectFn()
-
-    return effectFn
 }
 
 /**
