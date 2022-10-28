@@ -118,7 +118,7 @@ function effect(fn) {
      * @returns 
      */
     const effectFn = () => {
-        //  清空此副作用函数依赖的对象属性
+        //  将副作用函数从被收集的依赖列表中进行移除
         cleanup(effectFn)
 
         /**
@@ -140,7 +140,7 @@ function effect(fn) {
 }
 
 /**
- * 将副作用函数从关联的属性依赖中去掉
+ * 将副作用函数从被收集的依赖列表中进行移除
  * @param { TEffect } effectFn 副作用函数
  */
 function cleanup(effectFn) {

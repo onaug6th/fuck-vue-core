@@ -25,10 +25,8 @@
     //         console.info('age发生了变化：', _data.age)
     //     })
 
-    //     //  name发生变化时，会先打印上方的age，再打印name
-    //     //  但此处修改_data.name，并不会触发更新
-    //     //  原因是因为上方的effect执行后，activeEffect被释放了
-    //     //  导致读取_data.name无法拿到正确的正在执行的effect
+    //     //  此处修改_data.name，会错误的打印了age
+    //     //  我们期望修改name时，先打印上方的age，再打印name
     //     //  那么该如何解决呢？
     //     console.info('name发生了变化：', _data.name)
     // })

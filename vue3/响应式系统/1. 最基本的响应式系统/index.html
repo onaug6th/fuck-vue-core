@@ -13,13 +13,16 @@
 <script src="./index.js"></script>
 
 <script>
-    effect(() => {
-        console.info('name或age变化时，你会看到这段打印：', _data.name, _data.age)
-    })
+    function p1() {
+        console.info(_data.age)
+    }
 
-    effect(() => {
-        console.info('name变化时，你会看到这段打印：', _data.name)
-    })
+    function p2() {
+        console.info(`my name is ${ _data.name }, i 'm ${ _data.age } years old.`)
+    }
+
+    effect(p1)
+    effect(p2)
 
     // effect(() => {
     //     //  showNameFirst改变时，会输出这段打印
