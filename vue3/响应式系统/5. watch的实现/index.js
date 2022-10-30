@@ -196,7 +196,7 @@ function computed(getter) {
                 isNeedComputed = false
             }
 
-            //  计算属性被获取时，需要重新依赖收集
+            //  计算属性被读取时，需要重新依赖收集
             track(obj, 'value')
             //  返回计算属性结果
             return value
@@ -218,7 +218,7 @@ function computed(getter) {
                 //  设置为需要计算
                 isNeedComputed = true
 
-                //  计算属性发生改变，需要执行全部副作用函数
+                //  计算属性发生改变，手动进行派发更新
                 trigger(obj, 'value')
             }
         }
