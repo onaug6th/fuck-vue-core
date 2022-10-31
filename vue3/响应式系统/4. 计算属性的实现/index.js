@@ -136,9 +136,7 @@ function effect(fn, options = {}) {
         //  将副作用函数从被收集的依赖列表中进行移除
         cleanup(effectFn)
 
-        /**
-         * 当注册副作用函数时，将副作用函数赋值给 activeEffect
-         */
+        //  赋值给 activeEffect，为了在get里能被正确收集依赖
         activeEffect = effectFn
         // 在调用副作用函数之前将当前副作用函数压栈
         effectStack.push(effectFn)
@@ -198,7 +196,7 @@ function computed(getter) {
                 isNeedComputed = false
             }
 
-            //  计算属性被获取时，需要重新依赖收集
+            //  计算属性被读取时，需要重新依赖收集
             track(obj, 'value')
             //  返回计算属性结果
             return value
@@ -220,7 +218,7 @@ function computed(getter) {
                 //  设置为需要计算
                 isNeedComputed = true
 
-                //  计算属性发生改变，需要执行全部副作用函数
+                //  计算属性发生改变，手动进行派发更新
                 trigger(obj, 'value')
             }
         }
